@@ -1,3 +1,4 @@
+import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 import cryptoHelper from "./crypto";
 import {io, Socket} from "socket.io-client";
 
@@ -7,11 +8,35 @@ export class Room extends EventTarget {
     key?: string;
     sessionKey?: string;
     socket?: Socket;
+    // TODO: find item type
+    queue: BaseItemDto[] = [];
+    currentItem: BaseItemDto | null = null;
 
     constructor(id: string, key?: string) {
         super();
         this.id = id;
         this.key = key;
+        this.addEventListener("queue_update", this.queueChanged.bind(this));
+    }
+
+    get hosting(): boolean{
+        return this.sessionKey != null;
+    }
+
+    queueChanged(){
+        if(this.hosting){
+            if(this.socket) this.syncQueue();
+        }
+    }
+
+    serializeQueue(): any[] {
+        // redact sensitive info
+        return [];
+    }
+
+    syncQueue(){
+        if(!this.socket) throw new Error("Room socket not setup");
+        // send broadcast payload
     }
 
     async validate(): Promise<boolean> {
@@ -35,6 +60,7 @@ export class Room extends EventTarget {
             const payload = JSON.parse(cryptoHelper.bufferToString(decrypted));
             return roomJson.id == payload.id;
         }catch(ex){
+            console.warn("Failed to validate room key, likely key incorrect", ex);
             return false;
         }
     }
@@ -70,6 +96,16 @@ export class Room extends EventTarget {
         }
         this.sessionKey = json.sessionKey; // a jwt allowing us connect to the socket
         return json;
+    }
+
+    addQueue(item: BaseItemDto){
+        this.queue.push(item);
+        this.dispatchEvent(new CustomEvent("queue_update", {
+            detail: {
+                type: "add",
+                item: item
+            }
+        }));
     }
 
     upgrade(){

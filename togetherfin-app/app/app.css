@@ -20,3 +20,11 @@ body {
 .custom-card {
   @apply bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg border border-gray-200 dark:border-gray-700 p-4 m-2;
 }
+
+.text-default {
+  @apply text-gray-900 dark:text-gray-100;
+}
+
+.optimized-image {
+  content-visibility: auto;
+}

@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import Room from "~/lib/room";
 import { Configurator } from "~/components/configurator";
 import { DialogTitle } from "@radix-ui/react-dialog";
+import { ContentBrowser } from "~/components/content_browser";
+import { Queue } from "~/components/host_queue";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -69,7 +71,7 @@ export default function Host() {
 
   return <>
     <div className="m-auto max-w-7xl">
-      <div className="text-2xl font-bold">
+      <div className="text-2xl font-bold text-default">
         Room: {roomId}
       </div>
       <div className="grid grid-cols-3 gap-4">
@@ -99,7 +101,9 @@ export default function Host() {
               Network statistics
             </TabsContent>
             <TabsContent value="queue">
-              Queue.
+              <ContentBrowser room={room} />
+              <Queue room={room} />
+              
             </TabsContent>
           </Tabs>
           <Dialog>
@@ -107,7 +111,7 @@ export default function Host() {
               <Button className="w-full">Configure</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Configure</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle className="text-default">Configure</DialogTitle></DialogHeader>
               <Configurator room={room} />
             </DialogContent>
           </Dialog>

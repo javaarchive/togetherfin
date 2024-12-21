@@ -6,8 +6,11 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
+    "@hono/zod-validator": "^0.4.2",
     "dotenv": "^16.4.7",
-    "hono": "^4.6.14"
+    "hono": "^4.6.14",
+    "jose": "^5.9.6",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",

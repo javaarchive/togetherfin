@@ -1,20 +1,21 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
-    darkMode: ["class"],
+	darkMode: ["selector"], // ["class"],
     content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
   theme: {
   	extend: {
   		fontFamily: {
   			sans: [
-  				'Inter"',
+  				'"Inter"',
   				'ui-sans-serif',
   				'system-ui',
   				'sans-serif',
-  				'Apple Color Emoji"',
-  				'Segoe UI Emoji"',
-  				'Segoe UI Symbol"',
-  				'Noto Color Emoji"'
+  				'"Apple Color Emoji"',
+  				'"Segoe UI Emoji"',
+  				'"Segoe UI Symbol"',
+  				'"Noto Color Emoji"'
   			]
   		},
   		borderRadius: {
@@ -25,5 +26,5 @@ export default {
   		colors: {}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;

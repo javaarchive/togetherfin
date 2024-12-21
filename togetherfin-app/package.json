@@ -9,6 +9,11 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@jellyfin/sdk": "^0.11.0",
+    "@radix-ui/react-dialog": "^1.1.4",
+    "@radix-ui/react-label": "^2.1.1",
+    "@radix-ui/react-slot": "^1.1.1",
+    "@radix-ui/react-tabs": "^1.1.2",
     "@react-router/node": "^7.0.2",
     "@react-router/serve": "^7.0.2",
     "class-variance-authority": "^0.7.1",
@@ -16,9 +21,11 @@
     "isbot": "^5.1.17",
     "lucide-react": "^0.468.0",
     "plyr-react": "^5.3.0",
+    "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.0.2",
+    "socket.io-client": "^4.8.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7"
   },

@@ -1,5 +1,7 @@
 import type { BaseItemDto } from "@jellyfin/sdk/lib/generated-client/models";
 import { useEffect, useState } from "react";
+import { getMediaPrettyName } from "~/lib/jellyfin";
+import type { HostPlayableItem } from "~/lib/room";
 import type Room from "~/lib/room";
 
 interface QueueProps {
@@ -8,15 +10,19 @@ interface QueueProps {
 
 export function Queue(props: QueueProps) {
 
-    let [queue, setQueue] = useState<BaseItemDto[]>([]);
+    let [queue, setQueue] = useState<HostPlayableItem[]>([]);
+
+    function syncQueue(){
+        setQueue([
+            // copy queue
+            ...props.room.queue
+        ]);
+    }
 
     // add effect that subscribes and unsubscribes on exit to room queue updates
     useEffect(() => {
         const listener = (ev: CustomEvent) => {
-            setQueue([
-                // copy queue
-                ...props.room.queue
-            ]);
+            syncQueue();
         };
         props.room.addEventListener("queue_update", listener as any);
         return () => {
@@ -24,14 +30,19 @@ export function Queue(props: QueueProps) {
         };
     }, [props.room]);
 
+    // initial sync
+    useEffect(() => {
+        syncQueue();
+    }, []);
+
     return <>
         <span className="text-2xl font-bold text-default">
             Queue
         </span>
         <div className="border">
         {
-            queue.length > 0 && queue.map((item) => {
-                return <div key={item.Id}>{item.Name}</div>
+            queue.length > 0 && queue.map((item, index) => {
+                return <div key={item.libraryItem.Id}>{index + 1}. {getMediaPrettyName(item.libraryItem)}</div>
             })
         }
         {

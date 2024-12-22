@@ -1,3 +1,18 @@
+
+interface StoreFile {
+    time: number;
+    channel: string;
+    data: Blob;
+}
+
+interface JournalEntry {
+    time: number;
+    key: string;
+}
+
+const MAX_SPECIAL = 50;
+const MAX_DEFAULT = 400;
+
 class Room {
     id: string;
     challenge: string;
@@ -8,6 +23,63 @@ class Room {
     constructor(id: string, challenge: string) {
         this.id = id;
         this.challenge = challenge;
+    }
+
+    files: Map<string, StoreFile> = new Map();
+
+    special_journal: JournalEntry[] = [];
+    default_journal: JournalEntry[] = [];
+
+    put(key: string, value: Blob){
+        const isSpecial = key.startsWith("_");
+        const channel = isSpecial ? "special" : "default";
+        this.files.set(key, {
+            time: Date.now(),
+            channel: channel,
+            data: value
+        });
+        if(isSpecial){
+            this.special_journal.push({
+                time: Date.now(),
+                key: key
+            });
+        }else{
+            this.default_journal.push({
+                time: Date.now(),
+                key: key
+            });
+        }
+        this.gc();
+        return this.files.get(key);
+    }
+
+    gc(){
+        // repair journal if inconsistent
+        this.special_journal = this.special_journal.filter((entry) => {
+            entry.time == this.files.get(entry.key)?.time;
+        });
+        this.default_journal = this.default_journal.filter((entry) => {
+            entry.time == this.files.get(entry.key)?.time;
+        });
+
+        // gc
+        while(this.special_journal.length > MAX_SPECIAL){
+            const toDelete = this.special_journal.shift()!;
+            this.files.delete(toDelete.key);
+        }
+        while(this.default_journal.length > MAX_DEFAULT){
+            const toDelete = this.default_journal.shift()!;
+            this.files.delete(toDelete.key);
+        }
+    }
+
+    get(key: string): Blob | null {
+        const file = this.files.get(key);
+        if(file){
+            return file.data;
+        }else{
+            return null;
+        }
     }
 }
 

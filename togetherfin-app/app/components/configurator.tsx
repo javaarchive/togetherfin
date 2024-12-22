@@ -5,7 +5,7 @@ import type Room from "~/lib/room";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { getApi, hasCredentials, tryLogin } from "~/lib/jellyfin";
+import { getApi, hasCredentials, tryLogin, updateCachedUserID } from "~/lib/jellyfin";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
 import type { UserDto } from "@jellyfin/sdk/lib/generated-client/models";
 
@@ -29,6 +29,11 @@ export function Configurator(props: ConfiguratorProps) {
                 const usersResp = await userApi.getCurrentUser();
                 const user: UserDto = usersResp.data;
                 setAuthStatus("Authenticated as " + user["Name"] + "!");
+                if(user["Id"] && user["Id"].length > 0){
+                    updateCachedUserID(user["Id"]);
+                }else{
+                    console.warn("No user id in get current user response for check?");
+                }
             })();
         }else{
             setAuthStatus("No credentials stored.");

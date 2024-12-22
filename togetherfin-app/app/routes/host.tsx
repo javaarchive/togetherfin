@@ -31,7 +31,7 @@ export default function Host() {
   </>;
 
   let [room, setRoom] = useState<Room>(() => {
-    return new Room(roomId);
+    return new Room(roomId).setHosting(true);
   });
 
   let [hosting, setHosting] = useState(false);
@@ -88,7 +88,7 @@ export default function Host() {
       <div className="grid grid-cols-4 gap-2">
         <div className="col-span-3 custom-card">
           Player
-          <Player host={true}/>
+          <Player host={true} room={room}/>
         </div>
         <div className="custom-card">
           Controls...
@@ -103,7 +103,6 @@ export default function Host() {
             <TabsContent value="queue">
               <ContentBrowser room={room} />
               <Queue room={room} />
-              
             </TabsContent>
           </Tabs>
           <Dialog>

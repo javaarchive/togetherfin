@@ -52,6 +52,9 @@ FRONTEND_ROOT=./client
 3. If the challenge is solved, the client makes a socket.io connection to join the room so it can start receiving encrypted messages from the host.
 4. The client recieves a "sync" event with the current item and playback state from the host, and if it detects it needs to switch to a new item, loads the new item's master playlist and starts playing it.
 
+### file uploads
+the server serves all files with `application/octet-stream` mime type for security even though the files are encrypted. However, a current limitation of the system is that the host actively tells the server the mimetype of the file being transmited so the server can provide it to the client for ease of implementation. This is to be addressed in later revisions of the protocol.
+
 ## currently known issues and things being worked on
 * stability on bad internet connections + servers with very thin bandwidth
 * some subtitles are unable to be selected.

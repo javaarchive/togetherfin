@@ -1,2 +1,2 @@
 # togetherfin
- watch together e2e jellyfin server
+watch together e2e jellyfin server

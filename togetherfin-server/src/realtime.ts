@@ -3,7 +3,7 @@ import type { ServerType } from "@hono/node-server";
 import { Server as HttpServer } from "http";
 import { jwtVerify } from "jose";
 import { JWT_SECRET } from "./config.js";
-import globalRoomManager, { type RoomClaim } from "./rooms.js";
+import globalRoomManager, { Room, type RoomClaim } from "./rooms.js";
 import { join } from "path";
 
 async function realtime(server_retyped: ServerType) {
@@ -32,6 +32,13 @@ async function realtime(server_retyped: ServerType) {
             socket.join(roomID + "/host");
         }
     }
+
+    globalRoomManager.on("newRoom", (room: Room) => {
+        console.log("new room", room.id);
+        room.on("put", (key: string, file: any) => {
+            io.to(room.id).emit("filePut", key);
+        });
+    });
 
     io.on("connection", (socket) => {
         console.log("connected",socket.id);
@@ -83,6 +90,7 @@ async function realtime(server_retyped: ServerType) {
             // check if sender is host
             if(roomID && socket.rooms.has(roomID + "/host")){
                 io.to(roomID).emit("broadcast",message);
+                console.log("broadcast typing", typeof message);
                 return;
             }else{
                 console.warn("Attempted to broadcast to room without host " + socket.id);
@@ -99,7 +107,15 @@ async function realtime(server_retyped: ServerType) {
             }else{
                 console.warn("Attempted to send to room without host " + socket.id + " target: " + socket_id);
             }
-        })
+        });
+
+        socket.on("room_file_check", async (id, cb) => {
+            const roomID = idToRoomID.get(socket.id);
+            if(roomID){
+                const room = globalRoomManager.getRoom(roomID);
+                cb(room?.files.has(id));
+            }
+        });
     });
 }
 

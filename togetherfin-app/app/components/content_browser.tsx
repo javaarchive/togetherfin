@@ -34,6 +34,7 @@ export function ContentBrowser(props: ContentBrowserProps) {
     let [chosenMedia, setChosenMedia] = useState<BaseItemDto>(emptyItem);
     let [chosenMediaSource, setChosenMediaSource] = useState<MediaSourceInfo>({});
     let [chosenAudioTrack, setChosenAudioTrack] = useState<MediaStream>({}); 
+    let [chosenSubtitleTrack, setChosenSubtitleTrack] = useState<MediaStream>({});
 
     async function search(){
         const api = getApi();
@@ -105,6 +106,7 @@ export function ContentBrowser(props: ContentBrowserProps) {
                 if(resp.data.MediaSources[0].MediaStreams){
                     const defaultAudioTrack = resp.data.MediaSources[0].MediaStreams.find((stream) => stream.Type == "Audio");
                     if(defaultAudioTrack) setChosenAudioTrack(defaultAudioTrack);
+                    setChosenSubtitleTrack({});
                 }
             }
             setChooseMediaOptionsOpen(true);
@@ -117,7 +119,8 @@ export function ContentBrowser(props: ContentBrowserProps) {
         props.room.add({
             libraryItem: chosenMedia,
             mediaSource: chosenMediaSource,
-            audioTrack: chosenAudioTrack
+            audioTrack: chosenAudioTrack,
+            subtitleTrack: chosenSubtitleTrack
         });
     }
     
@@ -246,6 +249,29 @@ export function ContentBrowser(props: ContentBrowserProps) {
                                 {(chosenMediaSource.MediaStreams || []).filter((stream) => stream.Type == "Audio").map((stream) => {
                                     return <SelectItem key={stream.Index?.toString() || ""} value={stream.Index?.toString() || ""}>{stream.DisplayTitle} ({stream.Codec} {stream.ChannelLayout})</SelectItem>
                                 })}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                    You may also optionally add a subtitle track, which may be displayed if possible.
+                    <Select value={chosenSubtitleTrack.Index ? chosenSubtitleTrack.Index.toString() : "-1"} onValueChange={(value) => {
+                        if(parseInt(value) < 0) setChosenSubtitleTrack({});
+                        const idx =  parseInt(value);
+                        const chosen = (chosenMediaSource.MediaStreams || []).find((stream) => stream.Type == "Subtitle" && stream.Index == idx);
+                        if(chosen){
+                            setChosenSubtitleTrack(chosen);
+                        }
+                    }}>
+                        <SelectTrigger className="w-full text-default">
+                            <SelectValue placeholder="Select a subtitle track to play." className="text-default" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Subtitle Tracks</SelectLabel>
+                                {(chosenMediaSource.MediaStreams || []).filter((stream) => stream.Type == "Subtitle").map((stream) => {
+                                    return <SelectItem key={stream.Index?.toString() || ""} value={stream.Index?.toString() || ""}>{stream.DisplayTitle} ({stream.Codec} {stream.Index})</SelectItem>
+                                })}
+                                <SelectLabel>Misc</SelectLabel>
+                                <SelectItem value="-1">None</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

@@ -1,8 +1,10 @@
+import EventEmitter from "node:events";
 
 interface StoreFile {
     time: number;
     channel: string;
     data: Blob;
+    type?: string;
 }
 
 interface JournalEntry {
@@ -13,7 +15,7 @@ interface JournalEntry {
 const MAX_SPECIAL = 50;
 const MAX_DEFAULT = 400;
 
-class Room {
+class Room extends EventEmitter {
     id: string;
     challenge: string;
     owner: string | null = null;
@@ -21,6 +23,7 @@ class Room {
     // one can use the challenge to check their key
 
     constructor(id: string, challenge: string) {
+        super();
         this.id = id;
         this.challenge = challenge;
     }
@@ -30,13 +33,14 @@ class Room {
     special_journal: JournalEntry[] = [];
     default_journal: JournalEntry[] = [];
 
-    put(key: string, value: Blob){
+    put(key: string, value: Blob, type?: string){
         const isSpecial = key.startsWith("_");
         const channel = isSpecial ? "special" : "default";
         this.files.set(key, {
             time: Date.now(),
             channel: channel,
-            data: value
+            data: value,
+            type: type
         });
         if(isSpecial){
             this.special_journal.push({
@@ -50,6 +54,7 @@ class Room {
             });
         }
         this.gc();
+        this.emit("put", key, this.files.get(key));
         return this.files.get(key);
     }
 
@@ -65,10 +70,12 @@ class Room {
         // gc
         while(this.special_journal.length > MAX_SPECIAL){
             const toDelete = this.special_journal.shift()!;
+            this.emit("predelete", toDelete.key);
             this.files.delete(toDelete.key);
         }
         while(this.default_journal.length > MAX_DEFAULT){
             const toDelete = this.default_journal.shift()!;
+            this.emit("predelete", toDelete.key);
             this.files.delete(toDelete.key);
         }
     }
@@ -81,10 +88,23 @@ class Room {
             return null;
         }
     }
+
+    type(key: string): string | null {
+        const file = this.files.get(key);
+        if(file){
+            return file.type ? file.type : null;
+        }else{
+            return null;
+        }
+    }
 }
 
-class RoomManager {
+class RoomManager extends EventEmitter {
     rooms: Map<string, Room> = new Map();
+
+    constructor(){
+        super();
+    }
 
     openRoom(id: string, challenge: string, owner?: string): Room {
         if(this.rooms.has(id)){
@@ -99,6 +119,7 @@ class RoomManager {
             room.owner = owner;
         }
         this.rooms.set(id, room);
+        this.emit("newRoom", room);
         return room;
     }
 
@@ -107,6 +128,7 @@ class RoomManager {
     }
 
     closeRoom(id: string): void {
+        this.emit("closeRoom", this.rooms.get(id), id);
         this.rooms.delete(id);
     }
 }
@@ -121,6 +143,7 @@ export interface RoomClaim {
 export default globalRoomManager;
 
 export {
+    Room,
     RoomManager,
     globalRoomManager
 };

@@ -53,16 +53,13 @@ class CryptoHelper {
         const iv = bundle.iv;
         const ciphertext = bundle.ciphertext;
         const buffer = new Uint8Array(salt.byteLength + iv.byteLength + ciphertext.byteLength);
-        buffer.set(salt, 0);
-        buffer.set(iv, salt.byteLength);
+        buffer.set(salt, 0); // 16
+        buffer.set(iv, salt.byteLength); // 12 + 16
         buffer.set(ciphertext, salt.byteLength + iv.byteLength);
         return buffer;
     }
 
-    async decrypt(buffer: Uint8Array, password: string){
-        const salt = buffer.slice(0, 16);
-        const iv = buffer.slice(16, 32);
-        const ciphertext = buffer.slice(32);
+    async decrypt(ciphertext: Uint8Array, salt: Uint8Array, iv: Uint8Array, password: string){
         const key = await this.deriveKey(password, salt);
         const payload = await crypto.subtle.decrypt({
             name: "AES-GCM",
@@ -73,14 +70,9 @@ class CryptoHelper {
 
     async decryptFromBuffer(buffer: Uint8Array, password: string){
         const salt = buffer.slice(0, 16);
-        const iv = buffer.slice(16, 32);
-        const ciphertext = buffer.slice(32);
-        const key = await this.deriveKey(password, salt);
-        const payload = await crypto.subtle.decrypt({
-            name: "AES-GCM",
-            iv: iv,
-        }, key, ciphertext);
-        return payload;
+        const iv = buffer.slice(16, 28);
+        const ciphertext = buffer.slice(28);
+        return (await this.decrypt(ciphertext, salt, iv, password));
     }
 
     toBuffer(str: string): Uint8Array {
@@ -122,6 +114,17 @@ class CryptoHelper {
     async hashString(content: string, algorithm: string = "SHA-512"): Promise<string> {
         const contentUint8 = new TextEncoder().encode(content);
         return this.hash(contentUint8, algorithm);
+    }
+
+    async selftest(){
+        const testKey = "abc123test";
+        const testPlaintext = "Sample text to encrypt!";;
+        const encrypted = await this.encryptToBuffer(this.toBuffer(testPlaintext), testKey);
+        const decrypted = await this.decryptFromBuffer(encrypted, testKey);
+        if(this.bufferToString(decrypted) != testPlaintext){
+            throw new Error("Self test failed");
+        }
+        console.log("self test ok");
     }
 }
 

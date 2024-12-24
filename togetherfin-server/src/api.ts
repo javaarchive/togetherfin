@@ -53,6 +53,23 @@ app.put("/room", zValidator("json", z.object({
     });
 });
 
+app.get("/room/:id", async (c) => {
+    const room = globalRoomManager.getRoom(c.req.param("id"));
+    if(room){
+        return c.json({
+            ok: true,
+            challenge: room.challenge,
+            id: room.id,
+        });
+    }else{
+        c.status(404);
+        return c.json({
+            ok: false,
+            error: "Room not found. Please try again."
+        });
+    }
+});
+
 app.post("/room/:id/:key", async (c) => {
     // get session key from headers
     const authorization = c.req.header("Authorization");
@@ -72,7 +89,7 @@ app.post("/room/:id/:key", async (c) => {
         const room = globalRoomManager.getRoom(claim.id);
         if(room){
             const file = await c.req.blob();
-            room.put(key, file);
+            room.put(key, file, c.req.header("Content-Type"));
             return c.json({
                 ok: true,
                 time: Date.now()
@@ -91,9 +108,13 @@ app.get("/room/:id/:key", async (c) => {
     const room = globalRoomManager.getRoom(c.req.param("id"));
     if(room){
         const file = room.get(c.req.param("key"));
+        const type = room.type(c.req.param("key"));
         if(file){
             c.header("Content-Type", "application/octet-stream");
             c.header("Content-Disposition", "attachment; filename=" + c.req.param("key") + ".bin");
+            if(type){
+                c.header("X-Real-Content-Type", type);
+            }
             return c.body(file.stream());
         }else{
             c.status(404);
@@ -102,6 +123,12 @@ app.get("/room/:id/:key", async (c) => {
                 error: "File not found. Please try again."
             });
         }
+    }else{
+        c.status(404);
+        return c.json({
+            ok: false,
+            error: "Room not found. Please try again."
+        });
     }
 });
 

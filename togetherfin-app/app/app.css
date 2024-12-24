@@ -28,3 +28,9 @@ body {
 .optimized-image {
   content-visibility: auto;
 }
+/* force scrollbar in plyr if too many subtitles */
+.plyr__menu__container > div > div:nth-child(2) {
+  max-height: 400px;
+  overflow: scroll;
+  scrollbar-width: none;
+}

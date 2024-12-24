@@ -129,7 +129,7 @@ export default function RoomPage() {
     </div>
     <div style={{display: isErroring ? "block": "none"}}>
       {errorText} <br />
-      Reload or reopen the activity to try again.
+      Reload or reopen the activity to try again. Room link: <a href={"/room/" + roomId}>here</a>.
     </div>
   </>;
 }

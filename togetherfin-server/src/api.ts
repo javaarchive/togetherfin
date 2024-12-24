@@ -7,7 +7,7 @@ import globalHostCodeManager from "./host_codes.js";
 import { jwtVerify, SignJWT } from "jose";
 import { JWT_SECRET, JWT_SECRET_STRING } from "./config.js";
 
-import { bearerAuth } from 'hono/bearer-auth'
+import fetch from "node-fetch";
 
 const app = new Hono();
 
@@ -154,5 +154,52 @@ app.post("/hostcode", zValidator("json", z.object({
         ok: true
     });
 });
+
+// optional discord endpoint
+if(process.env.DISCORD_CLIENT_SECRET && process.env.VITE_DISCORD_CLIENT_ID){
+    app.post("/discord", zValidator("json", z.object({
+        code: z.string()
+    })), async (c) => {
+        const json = c.req.valid("json");
+        const code = json.code;
+        try{
+            const response = await fetch(`https://discord.com/api/oauth2/token`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                  client_id: process.env.VITE_DISCORD_CLIENT_ID || "",
+                  client_secret: process.env.DISCORD_CLIENT_SECRET || "",
+                  grant_type: "authorization_code",
+                  code: code,
+                }),
+            });
+            if(!response.ok){
+                throw new Error("Failed to get discord token: " + (await response.text()));
+            }
+            const json: any = await response.json();
+            if(!json.access_token){
+                throw new Error("Discord response did not contain access token");
+            }
+
+            return c.json({
+                ok: true,
+                access_token: json.access_token,
+                data: json.access_token
+            });
+        }catch(ex){
+            console.warn("Failed to get discord token", ex);
+            c.status(500);
+            return c.json({
+                ok: false,
+                error: "Failed to get discord token: " + ex
+            });
+        }
+    });
+    console.log("discord integration enabled");
+}else{
+    console.log("Discord client id and secret not set, skipping discord endpoint init");
+}
 
 export default app;

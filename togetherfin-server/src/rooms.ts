@@ -12,7 +12,7 @@ interface JournalEntry {
     key: string;
 }
 
-const MAX_SPECIAL = 50;
+const MAX_SPECIAL = 100;
 const MAX_DEFAULT = 400;
 
 class Room extends EventEmitter {

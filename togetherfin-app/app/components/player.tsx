@@ -17,7 +17,7 @@ interface PlayerProps {
 }
 
 const HOST_CONTROLS = ["play", "progress", "current-time","rewind", "mute", "volume", "settings", "pip", "airplay", "fullscreen"];
-const GUEST_CONTROLS = ["play", "current-time", "mute", "volume", "pip", "airplay", "fullscreen"];
+const GUEST_CONTROLS = ["play", "current-time", "mute", "volume", "settings","pip", "airplay", "fullscreen"];
 const MAX_DRIFT_MS = 5 * 1000;
 const MAX_DRIFT_PAUSED_MS = 2 * 1000;
 const RESYNC_MIN_MS = 500;

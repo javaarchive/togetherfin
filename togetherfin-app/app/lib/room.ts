@@ -3,6 +3,7 @@ import cryptoHelper from "./crypto";
 import {io, Socket} from "socket.io-client";
 import type { PlyrInstance } from "plyr-react";
 import { getProfiles, Streamer } from "./jellyfin";
+import { apiPath, detectDiscordActivity } from "./utils";
 
 export interface HostPlayableItem {
     libraryItem: BaseItemDto;
@@ -313,7 +314,7 @@ export class Room extends EventTarget {
     async uploadFile(file_id: string, buffer: ArrayBuffer, hintMimetype: string = "application/octet-stream"){
         if(!this.key) throw new Error("Room key not set");
         const encrypted = await cryptoHelper.encryptToBuffer(new Uint8Array(buffer), this.key);
-        const resp = await fetch("/api/room/" + this.id + "/" + file_id, {
+        const resp = await fetch(apiPath("/api/room/" + encodeURIComponent(this.id) + "/" + file_id), {
             method: "POST",
             headers: {
                 "Content-Type": hintMimetype,
@@ -329,7 +330,7 @@ export class Room extends EventTarget {
 
     async downloadFile(file_id: string): Promise<Blob> {
         if(!this.key) throw new Error("Room key not set");
-        const resp = await fetch("/api/room/" + this.id + "/" + file_id);
+        const resp = await fetch(apiPath("/api/room/" + encodeURIComponent(this.id) + "/" + file_id));
         if(!resp.ok){
             throw new Error("Failed to download file: " + (await resp.text()));
         }
@@ -350,7 +351,7 @@ export class Room extends EventTarget {
     }
 
     async fetch(): Promise<any> {
-        const resp = await fetch("/api/room/" + encodeURIComponent(this.id));
+        const resp = await fetch(apiPath("/api/room/" + encodeURIComponent(this.id)));
         if(!resp.ok){
             throw new Error("Failed to fetch room: " + (await resp.text()) + " may not exist.");
         }
@@ -365,7 +366,6 @@ export class Room extends EventTarget {
     async validateKey(key: string, roomJson: any): Promise<boolean> {
         try{
             // https://stackoverflow.com/a/41106346
-            console.log("decrypt with", key, roomJson.challenge);
             const decrypted = await cryptoHelper.decryptFromBuffer(Uint8Array.from(atob(roomJson.challenge), c => c.charCodeAt(0)), key);
             const payload = JSON.parse(cryptoHelper.bufferToString(decrypted));
             return roomJson.id == payload.id;
@@ -388,7 +388,7 @@ export class Room extends EventTarget {
     async host(hostcode?: string): Promise<void> {
         if(!this.key) throw new Error("Room key not set");
         const challenge = await this.generateChallenge();
-        const resp = await fetch("/api/room", {
+        const resp = await fetch(apiPath("/api/room"), {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -461,8 +461,9 @@ export class Room extends EventTarget {
 
     async connect(): Promise<void> {
         // connect to the socket
-        const socket = io({
+        const socket = io(detectDiscordActivity() ? "/.proxy": "/",{
             autoConnect: false,
+            path: detectDiscordActivity() ? "/.proxy/socket.io/" : "/socket.io/",
         });
         this.socket = socket;
         // tODO: change event names

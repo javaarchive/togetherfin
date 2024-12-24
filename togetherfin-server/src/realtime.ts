@@ -13,6 +13,7 @@ async function realtime(server_retyped: ServerType) {
             origin: "*",
             methods: ["GET", "POST", "PUT", "DELETE"],
         },
+      //  path: "/.proxy/socket.io/" // support discord
     });
 
     const idToRoomID = new Map<string, string>();

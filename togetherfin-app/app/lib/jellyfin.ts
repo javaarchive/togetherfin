@@ -518,7 +518,8 @@ export class Streamer {
                 const start = curStart + 0;
                 const end = curStart + segment.duration;
                 segment.uri = (new URL(segment.uri, contextUrl)).toString();
-                const networkID = await cryptoHelper.hashString(segment.uri);
+                const special = segment.uri.includes(".vtt"); // subtitles should be special so they don't get nuked from cache
+                const networkID = (special ? "_" : "") + (await cryptoHelper.hashString(segment.uri));
                 const newSegment: Segment = {
                     ...segment,
                 };

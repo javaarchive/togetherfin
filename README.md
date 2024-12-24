@@ -1,5 +1,5 @@
-# togetherfin
-watch together jellyfin server with end to end encryption of content (note: there is some metadata sent, see header below). objective is to try to have the server know as less as possible about the content in the room and only manage relaying data.
+# Togetherfin
+A "hacked together" (get the pun?) watch together jellyfin server with end to end encryption of content (note: there is some metadata sent, see header below). The objective is to try to have the server know as less as possible about the content in the room and only manage relaying data. 
 
 ## usage
 

@@ -56,7 +56,7 @@ export function ContentBrowser(props: ContentBrowserProps) {
     async function selectSearchResult(item: BaseItemDto){
         if(item.Type == "Series"){
             loadSeasonsChooser(item);
-        }else if(item.Type == "Movie" || item.Type == "Episode"){
+        }else if(item.Type == "Movie" || item.Type == "Episode" || item.Type == "Video"){
             loadMediaOptions(item);
         }else{
             console.log("Unknown item type", item.Type);

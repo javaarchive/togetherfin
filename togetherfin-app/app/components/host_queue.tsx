@@ -39,7 +39,7 @@ export function Queue(props: QueueProps) {
         <span className="text-2xl font-bold text-default">
             Queue
         </span>
-        <div className="border">
+        <div className="p-2">
         {
             queue.length > 0 && queue.map((item, index) => {
                 return <div key={item.libraryItem.Id}>{index + 1}. {getMediaPrettyName(item.libraryItem)}</div>

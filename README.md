@@ -1,12 +1,12 @@
 # Togetherfin
 A "hacked together" (get the pun?) web app for holding watch parties with your [Jellyfin](https://jellyfin.org/) library with [end to end encryption](https://en.wikipedia.org/wiki/End-to-end_encryption) of content (note: there is some metadata sent, see header below). The objective is to try to have the server know as less as possible about the content in the room and only manage relaying data.  
 
-## usage
+## Usage
 
-## deploying
+## Deploying
 This repository uses a monorepo structure for the frontend and backend. It is configured out of the box to work with the monorepo structure, however on deploying to a server you may wish to only deploy the backend with a prebuilt version of the server.
 
-### frontend
+### Frontend
 The frontend app is a react app with React Router, Vite built with TailwindCSS + Shadcn UI. It utilizes the Jellyfin Typescript SDK for most of the jellyfin interactions.
 ```bash
 cd togetherfin-app
@@ -15,7 +15,7 @@ npm run build # build the frontend
 ```
 If you want to try discord integration which does not work you may see `.env.example` on how to set your discord client id.
 
-### server
+### Server
 The server is a hono server with a socket.io realtime server that serves the SPA app and api endpoints.
 ```bash
 cd togetherfin-server
@@ -31,15 +31,15 @@ JWT_SECRET=superrandomstring
 # comma seperated host codes
 HOST_CODES=a,b,c
 # where to find the prebuilt frontend, useful for running in production
-FRONTEND_ROOT=./client
+# FRONTEND_ROOT=./client
 # uncomment and edit to enable discord activity integration
 # VITE_DISCORD_CLIENT_ID=123456789
 # DISCORD_CLIENT_SECRET=example
 ```
 
-### backend
+### Backend
 
-## protocol
+## Protocol
 ### What the host does
 1. Make a POST request to /api/room with a json payload containing the room id and a challenge (room metadata encrypted with the set password/key), and also a host code if applicable. The server validates the host code and generates a session key which is a JWT. If there is already a room with the same id but the same host code "owns" the room, the server will allow that host to use the room id, otherwise it will reject the request.
 2. The challenge and id is stored serverside for reference later. The client now makes it's realtime socket.io connect and "upgrades" using the session key given on connect so it gains permissions like being able to broadcast it's own messages to the room.
@@ -52,13 +52,13 @@ FRONTEND_ROOT=./client
 3. If the challenge is solved, the client makes a socket.io connection to join the room so it can start receiving encrypted messages from the host.
 4. The client recieves a "sync" event with the current item and playback state from the host, and if it detects it needs to switch to a new item, loads the new item's master playlist and starts playing it.
 
-### file uploads
+### File uploads
 the server serves all files with `application/octet-stream` mime type for security even though the files are encrypted. However, a current limitation of the system is that the host actively tells the server the mimetype of the file being transmited so the server can provide it to the client for ease of implementation. This is to be addressed in later revisions of the protocol.
 
-### crypto details
+### Crypto details
 Most stuff calls the WebCrypto api however I have not yet gotten a crypto breaking friend to break it yet. Utilzes AES-GCM for encryption/decryption and PKBDF2 for key derivation.
 
-## currently known issues and things being worked on
+## Currently known issues and things being worked on
 * stability on bad internet connections + servers with very thin bandwidth
 * some subtitles are unable to be selected.
 * ass subtitles are an entire rabbit hole of implementation, low priority, basically you can ship a entire font with subtitles now.

@@ -1,5 +1,5 @@
 # Togetherfin
-A "hacked together" (get the pun?) watch together jellyfin server with end to end encryption of content (note: there is some metadata sent, see header below). The objective is to try to have the server know as less as possible about the content in the room and only manage relaying data. 
+A "hacked together" (get the pun?) web app for holding watch parties with your [Jellyfin](https://jellyfin.org/) library with [end to end encryption](https://en.wikipedia.org/wiki/End-to-end_encryption) of content (note: there is some metadata sent, see header below). The objective is to try to have the server know as less as possible about the content in the room and only manage relaying data.  
 
 ## usage
 
@@ -55,6 +55,9 @@ FRONTEND_ROOT=./client
 ### file uploads
 the server serves all files with `application/octet-stream` mime type for security even though the files are encrypted. However, a current limitation of the system is that the host actively tells the server the mimetype of the file being transmited so the server can provide it to the client for ease of implementation. This is to be addressed in later revisions of the protocol.
 
+### crypto details
+Most stuff calls the WebCrypto api however I have not yet gotten a crypto breaking friend to break it yet. Utilzes AES-GCM for encryption/decryption and PKBDF2 for key derivation.
+
 ## currently known issues and things being worked on
 * stability on bad internet connections + servers with very thin bandwidth
 * some subtitles are unable to be selected.
@@ -62,3 +65,4 @@ the server serves all files with `application/octet-stream` mime type for securi
 * oops this might only work on Chromium browsers due to other browsers not implemented enough media related things.
 * there is currently a profile system in which when a video is being streamed a playback session is created per profile configuration allowing different qualities of video to be streamed, however the ui for using these profiles has not been implemented yet.
 * queue is buggy.
+* discord hates socket.io for some reason, so I can't ship this as a discord activity yet but maybe sometime in the future.
